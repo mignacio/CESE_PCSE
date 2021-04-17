@@ -11,9 +11,9 @@
 #include "queue.h"
 #include <string.h>
 
-#define HM10_UART UART_USB
+#define HM10_UART UART_232
 #define HM10_BAUDRATE 9600
-#define HM10_STATE_PIN GPIO7
+#define HM10_STATE_PIN CAN_RD
 
 void hm10_init(void);
 

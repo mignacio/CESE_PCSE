@@ -45,7 +45,9 @@ void clock_task(void* taskParamPtr)
 {
     while(TRUE)
     {
+    	taskENTER_CRITICAL();
         rtcRead(&date_time);
+        taskEXIT_CRITICAL();
         vTaskDelay(pdMS_TO_TICKS(LED_RATE));
     }
 }

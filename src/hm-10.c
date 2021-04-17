@@ -3,6 +3,7 @@
  *===========================================================================*/
 
 #include "hm-10.h"
+#include "sapi.h"
 
 void hm10_init()
 {
@@ -20,5 +21,5 @@ void hm10_send_at_command(uint8_t* command)
 
 void hm10_send_string(uint8_t* string)
 {
-
+	uartWriteString(HM10_UART, string);
 }

@@ -97,11 +97,13 @@ int main(void)
 
     return TRUE;
 }
-
+//#define QUEUE_DEBUG
 void max31855_task(void* taskParamPtr)
 {
 	max31855_t* device = (max31855_t*)taskParamPtr;
 	measurement_t max31855_measurement;
+	TickType_t xLastWakeTime = xTaskGetTickCount();
+	TickType_t xPeriodicity = pdMS_TO_TICKS(2000);
 	uint32_t aux_value;
 	int32_t internal_temp_raw;
 	int32_t external_temp_raw;
@@ -109,13 +111,14 @@ void max31855_task(void* taskParamPtr)
 	strcpy(max31855_measurement.name, device->name);
 	while(TRUE)
 	{
+		xLastWakeTime = xTaskGetTickCount();
 		aux_value = 0;
 		internal_temp_raw = 0;
 		external_temp_raw = 0;
-
+#ifdef QUEUE_DEBUG
 		gpioWrite(LED2, ON);
 		vTaskDelay(pdMS_TO_TICKS(100));
-
+#endif
 		taskENTER_CRITICAL();
 		max31855_read(device);
 		taskEXIT_CRITICAL();
@@ -133,27 +136,29 @@ void max31855_task(void* taskParamPtr)
 			device->internal_temp = 10000 * 0.0625 * internal_temp_raw;
 		}
 
-		external_temp_raw |= (int16_t)(device->buffer[1] >> 2);
-		external_temp_raw |= (int16_t)(device->buffer[0] << 6);
-		if((external_temp_raw & 0x0200) != 0)
+		//external_temp_raw |= ;
+		external_temp_raw = (int32_t)(device->buffer[0] << 6) + (int32_t)(device->buffer[1] >> 2);
+		if((external_temp_raw & 0x00002000) != 0)
 		{
-			external_temp_raw |= 0xC000;
-			device->external_temp = 1000 * -0.025 * external_temp_raw;
+			external_temp_raw |= 0xFFFFC000;//extiendo bit de signo, 1
 		}
 		else
 		{
-			external_temp_raw &= 0x3FFF;
-			device->external_temp = 1000 * 0.025 * external_temp_raw;
+			external_temp_raw &= 0x3FFF; //extiendo bit de signo, 0
 		}
+		device->external_temp = external_temp_raw * 25;
+		//multiplico por 25 para usar número entero
 
-		max31855_measurement.value = device->internal_temp;
+		max31855_measurement.value = device->external_temp;
 		max31855_measurement.date_time = clock_task_get_date_time();
-		max31855_measurement.decimal_pos = MAX31855_INTERNAL_DEC_POS;
+		max31855_measurement.decimal_pos = MAX31855_EXTERNAL_DEC_POS;
 		max31855_measurement.fault_code = device->buffer[3] & 0x0F;
-		xQueueSend(measurement_queue, &max31855_measurement, portMAX_DELAY);
 
+		xQueueSend(measurement_queue, &max31855_measurement, portMAX_DELAY);
+#ifdef QUEUE_DEBUG
 		gpioWrite(LED2, OFF);
-		vTaskDelay(pdMS_TO_TICKS(900));
+#endif
+		vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
 	}
 }
 
@@ -162,11 +167,23 @@ void hm10_task(void* taskParamPtr)
 	measurement_t measurement;
 	while(TRUE)
 	{
-		if (pdTRUE == xQueueReceive(measurement_queue, &measurement, portMAX_DELAY))
+		if(gpioRead(HM10_STATE_PIN))
 		{
-			taskENTER_CRITICAL();
-			printf("%s", measurement_to_string(&measurement));
-			taskEXIT_CRITICAL();
+			gpioWrite(LEDB, ON);
+			if(pdTRUE == xQueueReceive(measurement_queue, &measurement, portMAX_DELAY))
+			{
+				taskENTER_CRITICAL();
+				hm10_send_string(measurement_to_string(&measurement));
+				taskEXIT_CRITICAL();
+			}
 		}
+		else
+		{
+			gpioWrite(LEDB, ON);
+			vTaskDelay(pdMS_TO_TICKS(500));
+			gpioWrite(LEDB, OFF);
+			vTaskDelay(pdMS_TO_TICKS(500));
+		}
+
 	}
 }
