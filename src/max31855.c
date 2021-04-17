@@ -5,6 +5,9 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "max31855.h"
+#include "clock_task.h"
+#include "measurement.h"
+#include <string.h>
 
 spiMap_t spi_port = SPI0;
 
@@ -13,28 +16,17 @@ void max31855_init()
 	spiInit(spi_port);
 }
 
-void max31855_read_temp(max31855_t* device)
+void max31855(max31855_t* device, gpioMap_t chip_select, uint8_t* name_str)
+{
+	device->cs_pin = chip_select;
+	gpioInit(device->cs_pin, GPIO_OUTPUT);
+	memset(device->buffer, 0, MAX31855_BUFFER_SIZE);
+	strcpy(device->name, name_str);//, MAX31855_BUFFER_SIZE);
+}
+
+void max31855_read(max31855_t* device)
 {
 	gpioWrite(device->cs_pin, OFF);
 	spiRead(spi_port, device->buffer, MAX31855_BUFFER_SIZE);
 	gpioWrite(device->cs_pin, ON);
-}
-
-void max31855_task(void* taskParamPtr)
-{
-	max31855_t device = *((max31855_t*)taskParamPtr);
-
-	while(TRUE)
-	{
-		gpioWrite(LED2, ON);
-		vTaskDelay(pdMS_TO_TICKS(100));
-		max31855_read_temp(taskParamPtr);
-		printf("%02d, %02d, %02d, %02d\r\n",
-				device.buffer[0],
-				device.buffer[1],
-				device.buffer[2],
-				device.buffer[3]);
-		gpioWrite(LED2, OFF);
-		vTaskDelay(pdMS_TO_TICKS(900));
-	}
 }

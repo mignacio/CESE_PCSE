@@ -19,13 +19,14 @@ rtc_t date_time;
 
 DEBUG_PRINT_ENABLE;
 
-void clock_init()
+void clock_init(void)
 {
 	//No es posible usar rtcInit y FreeRTOS porque rtcInit llama
 	//a la funcion de sapi "delay"
 	Chip_RTC_Init(LPC_RTC);
 	Chip_RTC_Enable(LPC_RTC, ENABLE);
 
+	//vTaskDelay(pdMS_TO_TICKS(2100));
 
 	date_time.year = 2021;
 	date_time.month = 4;
@@ -44,15 +45,12 @@ void clock_task(void* taskParamPtr)
 {
     while(TRUE)
     {
-        gpioWrite(LEDB, ON);
         rtcRead(&date_time);
-        printf("%02d/%02d/%04d, %02d:%02d:%02d\r\n",
-        		date_time.mday, date_time.month, date_time.year,
-				date_time.hour, date_time.min, date_time.sec );
-
-        vTaskDelay(LED_RATE_MS / portTICK_RATE_MS);
-
-        gpioWrite(LEDB,OFF);
-        vTaskDelay(LED_RATE);
+        vTaskDelay(pdMS_TO_TICKS(LED_RATE));
     }
+}
+
+rtc_t clock_task_get_date_time()
+{
+	return date_time;
 }
