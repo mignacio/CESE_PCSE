@@ -16,7 +16,9 @@ void hm10_init()
 
 void hm10_send_at_command(uint8_t* command)
 {
-
+	uartWriteString(HM10_UART, "AT+");
+	uartWriteString(HM10_UART, command);
+	uartWriteString(HM10_UART, "\r\n");
 }
 
 void hm10_send_string(uint8_t* string)
