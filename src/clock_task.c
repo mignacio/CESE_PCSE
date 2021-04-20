@@ -26,7 +26,7 @@ void clock_init(void)
 	Chip_RTC_Init(LPC_RTC);
 	Chip_RTC_Enable(LPC_RTC, ENABLE);
 
-	//vTaskDelay(pdMS_TO_TICKS(2100));
+	vTaskDelay(pdMS_TO_TICKS(2100));
 
 	date_time.year = 2021;
 	date_time.month = 4;

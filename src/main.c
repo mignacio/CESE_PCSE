@@ -18,84 +18,99 @@ max31855_t aceite;
 
 max31855_t termocuplas[4];
 
+void peripherals_init_task(void* taskParamPtr);
 void max31855_task(void* taskParamPtr);
 void hm10_task(void* taskParamPtr);
+
+TaskHandle_t task_handle_init;
 
 int main(void)
 {
 	boardConfig();
-	measurement_queue_init();
-	clock_init();
-	hm10_init();
 
-	max31855(&admision, ENET_RXD1, "Tadm\0");
-	admision.cs_pin = ENET_RXD1;
-	max31855(&escape, ENET_MDC, "Tesc\0");
-	escape.cs_pin = ENET_MDC;
-	max31855(&aceite, ENET_CRS_DV, "Tace\0");
-	aceite.cs_pin = ENET_CRS_DV;
-
-//
-//	aceite.cs_pin = GPIO3;
-//	memset(aceite.buffer, 0, MAX31855_BUFFER_SIZE);
-
-    max31855_init();
-
-    BaseType_t res =
+	BaseType_t res =
 	xTaskCreate(
-				clock_task,
-				(const char*)"clock_task",
+				peripherals_init_task,
+				(const char*)"peripherals_init_task",
 				configMINIMAL_STACK_SIZE*2,
 				0,
 				tskIDLE_PRIORITY+1,
-				0
+				&task_handle_init
 	);
-    configASSERT(res == pdPASS);
-
-    res =
-    	xTaskCreate(
-				max31855_task,
-				(const char*)"admision_task",
-				configMINIMAL_STACK_SIZE*2,
-				(void*)&admision,
-				tskIDLE_PRIORITY+1,
-				0
-    	);
-    configASSERT(res == pdPASS);
-    res =
-		xTaskCreate(
-				max31855_task,
-				(const char*)"escape_task",
-				configMINIMAL_STACK_SIZE*2,
-				(void*)&escape,
-				tskIDLE_PRIORITY+1,
-				0
-		);
-    res =
-		xTaskCreate(
-				max31855_task,
-				(const char*)"aceite_task",
-				configMINIMAL_STACK_SIZE*2,
-				(void*)&aceite,
-				tskIDLE_PRIORITY+1,
-				0
-		);
 	configASSERT(res == pdPASS);
-    res =
-    	xTaskCreate(
-				hm10_task,
-				(const char*)"bluetooth_task",
-				configMINIMAL_STACK_SIZE*2,
-				0,
-				tskIDLE_PRIORITY+2,
-				0
-    	);
-
     vTaskStartScheduler();
 
     configASSERT(0);
 
     return TRUE;
+}
+void peripherals_init_task(void* taskParamPtr)
+{
+	measurement_queue_init();
+
+		hm10_init();
+
+		max31855(&admision, ENET_RXD1, "Tadm\0");
+		admision.cs_pin = ENET_RXD1;
+		max31855(&escape, ENET_MDC, "Tesc\0");
+		escape.cs_pin = ENET_MDC;
+		max31855(&aceite, ENET_CRS_DV, "Tace\0");
+		aceite.cs_pin = ENET_CRS_DV;
+
+	    max31855_init();
+	    clock_init();
+
+	    BaseType_t res =
+		xTaskCreate(
+					clock_task,
+					(const char*)"clock_task",
+					configMINIMAL_STACK_SIZE*2,
+					0,
+					tskIDLE_PRIORITY+2,
+					0
+		);
+	    configASSERT(res == pdPASS);
+
+	    res =
+	    	xTaskCreate(
+					max31855_task,
+					(const char*)"admision_task",
+					configMINIMAL_STACK_SIZE*2,
+					(void*)&admision,
+					tskIDLE_PRIORITY+1,
+					0
+	    	);
+	    configASSERT(res == pdPASS);
+	    res =
+			xTaskCreate(
+					max31855_task,
+					(const char*)"escape_task",
+					configMINIMAL_STACK_SIZE*2,
+					(void*)&escape,
+					tskIDLE_PRIORITY+1,
+					0
+			);
+	    res =
+			xTaskCreate(
+					max31855_task,
+					(const char*)"aceite_task",
+					configMINIMAL_STACK_SIZE*2,
+					(void*)&aceite,
+					tskIDLE_PRIORITY+1,
+					0
+			);
+		configASSERT(res == pdPASS);
+	    res =
+	    	xTaskCreate(
+					hm10_task,
+					(const char*)"bluetooth_task",
+					configMINIMAL_STACK_SIZE*2,
+					0,
+					tskIDLE_PRIORITY+2,
+					0
+	    	);
+
+	    vTaskSuspend(task_handle_init); //mi trabajo aquí ha terminado
 }
 //#define QUEUE_DEBUG
 void max31855_task(void* taskParamPtr)
@@ -127,17 +142,18 @@ void max31855_task(void* taskParamPtr)
 		internal_temp_raw |= (int16_t)(device->buffer[2] << 4);
 		if((internal_temp_raw & 0x800) != 0)
 		{
-			internal_temp_raw |= 0xF800;
-			device->internal_temp = 10000 * -0.0625 * internal_temp_raw;
+			internal_temp_raw |= 0xF800;//extiendo bit de signo, 1
 		}
 		else
 		{
-			internal_temp_raw &= 0x07FF;
-			device->internal_temp = 10000 * 0.0625 * internal_temp_raw;
+			internal_temp_raw &= 0x07FF; //extiendo bit de signo, 0
 		}
 
+		device->internal_temp = internal_temp_raw * 62;
+
 		//external_temp_raw |= ;
-		external_temp_raw = (int32_t)(device->buffer[0] << 6) + (int32_t)(device->buffer[1] >> 2);
+		external_temp_raw = (int32_t)(device->buffer[0] << 6) +
+							(int32_t)(device->buffer[1] >> 2);
 		if((external_temp_raw & 0x00002000) != 0)
 		{
 			external_temp_raw |= 0xFFFFC000;//extiendo bit de signo, 1
@@ -146,7 +162,7 @@ void max31855_task(void* taskParamPtr)
 		{
 			external_temp_raw &= 0x3FFF; //extiendo bit de signo, 0
 		}
-		device->external_temp = external_temp_raw * 25;
+		device->external_temp = external_temp_raw * 250;
 		//multiplico por 25 para usar número entero
 
 		max31855_measurement.value = device->external_temp;
