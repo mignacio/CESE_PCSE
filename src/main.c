@@ -50,12 +50,12 @@ void peripherals_init_task(void* taskParamPtr)
 
 		hm10_init();
 
-		max31855(&admision, ENET_RXD1, "Tadm\0");
-		admision.cs_pin = ENET_RXD1;
-		max31855(&escape, ENET_MDC, "Tesc\0");
-		escape.cs_pin = ENET_MDC;
-		max31855(&aceite, ENET_CRS_DV, "Tace\0");
-		aceite.cs_pin = ENET_CRS_DV;
+		max31855(&admision, LCD3, "Tadm\0");
+		admision.cs_pin = LCD3;
+		max31855(&escape, LCDRS, "Tesc\0");
+		escape.cs_pin = LCDRS;
+		max31855(&aceite, LCD4, "Tace\0");
+		aceite.cs_pin = LCD4;
 
 	    max31855_init();
 	    clock_init();
@@ -138,32 +138,32 @@ void max31855_task(void* taskParamPtr)
 		max31855_read(device);
 		taskEXIT_CRITICAL();
 
-		internal_temp_raw |= (int16_t)(device->buffer[3] >> 4);
-		internal_temp_raw |= (int16_t)(device->buffer[2] << 4);
-		if((internal_temp_raw & 0x800) != 0)
+		int32_t internal_temp_raw = 0;
+		internal_temp_raw = (int32_t)(device->buffer[3] >> 4) +
+							 (int32_t)(device->buffer[2] << 4);
+		if((internal_temp_raw & 0x00000800) != 0)
 		{
-			internal_temp_raw |= 0xF800;//extiendo bit de signo, 1
+			internal_temp_raw |= 0xFFFFF000;//extiendo bit de signo, 1
 		}
 		else
 		{
-			internal_temp_raw &= 0x07FF; //extiendo bit de signo, 0
+			internal_temp_raw &= 0x000007FF; //extiendo bit de signo, 0
 		}
 
-		device->internal_temp = internal_temp_raw * 62;
+		device->internal_temp = internal_temp_raw * 0.0625 * 1000;
 
-		//external_temp_raw |= ;
-		external_temp_raw = (int32_t)(device->buffer[0] << 6) +
-							(int32_t)(device->buffer[1] >> 2);
+		int32_t external_temp_raw = 0;
+		external_temp_raw = (int32_t)(device->buffer[1] >> 2) +
+							(int32_t)(device->buffer[0] << 6);
 		if((external_temp_raw & 0x00002000) != 0)
 		{
 			external_temp_raw |= 0xFFFFC000;//extiendo bit de signo, 1
 		}
 		else
 		{
-			external_temp_raw &= 0x3FFF; //extiendo bit de signo, 0
+			external_temp_raw &= 0x00003FFF; //extiendo bit de signo, 0
 		}
-		device->external_temp = external_temp_raw * 250;
-		//multiplico por 25 para usar número entero
+		device->external_temp = external_temp_raw * 25; // * 100 * 0.25
 
 		max31855_measurement.value = device->external_temp;
 		max31855_measurement.date_time = clock_task_get_date_time();
