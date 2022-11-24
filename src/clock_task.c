@@ -28,9 +28,9 @@ void clock_init(void)
 
 	vTaskDelay(pdMS_TO_TICKS(2100));
 
-	date_time.year = 2021;
-	date_time.month = 4;
-	date_time.mday = 1;
+	date_time.year = 2022;
+	date_time.month = 11;
+	date_time.mday = 20;
 	date_time.wday = 4;
 	date_time.hour = 3;
 	date_time.min = 2;
@@ -43,6 +43,8 @@ void clock_init(void)
 
 void clock_task(void* taskParamPtr)
 {
+	clock_init();
+
     while(TRUE)
     {
     	taskENTER_CRITICAL();
