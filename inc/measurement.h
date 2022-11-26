@@ -24,6 +24,6 @@ typedef struct
 QueueHandle_t measurement_queue;
 
 void measurement_queue_init(void);
-void measurement_set_name(measurement_t* measurement, uint8_t* name_str);
+void measurement_set_name(measurement_t* measurement, uint8_t name_str[5]);
 uint8_t* measurement_to_string(measurement_t* measurement);
 #endif /* CESE_PCSE_INC_MEASUREMENT_H_ */

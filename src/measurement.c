@@ -11,7 +11,7 @@ void measurement_queue_init(void)
 	measurement_queue = xQueueCreate(MEASUREMENT_QUEUE_N, sizeof(measurement_t));
 }
 
-void measurement_set_name(measurement_t* measurement, uint8_t* name_str)
+void measurement_set_name(measurement_t* measurement, uint8_t name_str[5])
 {
 	strncpy(measurement->name, name_str, MEASUREMENT_NAME_LENGTH);
 }
