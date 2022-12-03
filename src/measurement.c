@@ -3,6 +3,8 @@
  *===========================================================================*/
 #include "measurement.h"
 #include "sapi.h"
+#include "FreeRTOS.h"
+#include "queue.h"
 #include <math.h>
 #include <string.h>
 

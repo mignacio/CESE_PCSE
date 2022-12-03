@@ -2,12 +2,14 @@
  * Autor: Ignacio Moya, 2021.
  *===========================================================================*/
 #include "sapi.h"
+#include "sapi_gpio.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "max31855.h"
 #include "clock_task.h"
 #include "measurement.h"
 #include <string.h>
+#include <stdint.h>
 
 spiMap_t spi_port = SPI0;
 

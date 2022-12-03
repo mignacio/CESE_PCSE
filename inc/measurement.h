@@ -10,7 +10,7 @@
 #include "semphr.h"
 #include "queue.h"
 
-#define MEASUREMENT_QUEUE_N 10
+#define MEASUREMENT_QUEUE_N 20
 #define MEASUREMENT_NAME_LENGTH 5
 typedef struct
 {

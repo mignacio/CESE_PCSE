@@ -19,9 +19,9 @@ typedef struct
 }analog_sensor_t;
 
 void analog_sensors_init(void);
-void analog_sensor(analog_sensor_t* analog_sens, uint32_t scale, uint8_t* name,
-		adcMap_t adc_pin);
-uint32_t analog_sensor_read(analog_sensor_t* analog_sens, adcMap_t adc_pin);
+void analog_sensor(analog_sensor_t* analog_sens, uint32_t scale, adcMap_t adc_pin,
+		uint8_t* name);
+uint32_t analog_sensor_read(analog_sensor_t* analog_sens);
 
 
 #endif /* CESE_PCSE_INC_ANALOG_SENSORS_H_ */
