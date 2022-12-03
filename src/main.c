@@ -35,7 +35,7 @@ int main(void)
 					0);
 	assert_task_init(res);
 
-	res = xTaskCreate(adm_temp_task,
+	res = xTaskCreate(temp_sensor_task,
 					(const char*)"admision_task",
 					configMINIMAL_STACK_SIZE*2,
 					0,
@@ -43,43 +43,11 @@ int main(void)
 					0);
 	assert_task_init(res);
 
-	res = xTaskCreate(esc_temp_task,
-					(const char*)"escape_task",
+	res = xTaskCreate(analog_sensors_task,
+					(const char*)"analog_sensors",
 					configMINIMAL_STACK_SIZE*2,
 					0,
-					tskIDLE_PRIORITY+2,
-					0);
-	assert_task_init(res);
-
-	res = xTaskCreate(ace_temp_task,
-					(const char*)"aceite_task",
-					configMINIMAL_STACK_SIZE*2,
-					0,
-					tskIDLE_PRIORITY+2,
-					0);
-	assert_task_init(res);
-
-	res = xTaskCreate(vbatt_task,
-					(const char*)"vbatt_task",
-					configMINIMAL_STACK_SIZE*2,
-					0,
-					tskIDLE_PRIORITY+3,
-					0);
-	assert_task_init(res);
-
-	res = xTaskCreate(ace_pres_task,
-					(const char*)"aceite_task",
-					configMINIMAL_STACK_SIZE*2,
-					0,
-					tskIDLE_PRIORITY+3,
-					0);
-	assert_task_init(res);
-
-	res = xTaskCreate(o2_task,
-					(const char*)"o2_task",
-					configMINIMAL_STACK_SIZE*2,
-					0,
-					tskIDLE_PRIORITY+3,
+					tskIDLE_PRIORITY+4,
 					0);
 	assert_task_init(res);
 
