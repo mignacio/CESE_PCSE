@@ -26,7 +26,6 @@ int main(void)
 
 	BaseType_t res;
 
-	hm10_init();
 	res = xTaskCreate(hm10_task,
 					(const char*)"bluetooth_task",
 					configMINIMAL_STACK_SIZE*2,
@@ -72,6 +71,9 @@ void assert_task_init(BaseType_t res)
 void hm10_task(void* taskParamPtr)
 {
 	measurement_t measurement;
+
+	hm10_init();
+
 	while(TRUE)
 	{
 		if(gpioRead(HM10_STATE_PIN))
