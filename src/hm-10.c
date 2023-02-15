@@ -11,10 +11,10 @@ void hm10_init()
 	gpioInit(HM10_STATE_PIN, GPIO_INPUT);
 	uartInit(HM10_UART, HM10_BAUDRATE);
 	printf("hmlisto\r\n");
-	hm10_send_at_command("RESET");
+	//hm10_send_at_command("RESET");
 	hm10_send_at_command("NAMEICE-ADQ");
-	hm10_send_at_command("TYPE2");//conectar pidiendo clave
-	hm10_send_at_command("PASS123456");
+	hm10_send_at_command("TYPE0");//conectar pidiendo clave
+	//hm10_send_at_command("PASS123456");
 }
 
 void hm10_send_at_command(uint8_t* command)

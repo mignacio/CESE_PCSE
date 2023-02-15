@@ -103,24 +103,24 @@ void temp_sensor_task(void* taskParamPtr)
 
 		adm_meas.ticks = xLastWakeTime;
 		max31855_read(&adm_temp);
-		//device->external_temp = max31855_ext_temp_to_celsius(device);
 		adm_temp.external_temp = max31855_int_temp_to_celsius(&adm_temp);
+//		adm_temp.external_temp = max31855_ext_temp_to_celsius(&adm_temp);
 		adm_meas.value = adm_temp.external_temp;
 		adm_meas.fault_code = adm_temp.buffer[3] & 0x0F;
 		xQueueSend(measurement_queue, &adm_meas, portMAX_DELAY);
 
 		esc_meas.ticks = xLastWakeTime;
-		max31855_read(&adm_temp);
-		//device->external_temp = max31855_ext_temp_to_celsius(device);
-		adm_temp.external_temp = max31855_int_temp_to_celsius(&adm_temp);
+		max31855_read(&esc_temp);
+		adm_temp.external_temp = max31855_int_temp_to_celsius(&esc_temp);
+//		adm_temp.external_temp = max31855_ext_temp_to_celsius(&adm_temp);
 		esc_meas.value = adm_temp.external_temp;
 		esc_meas.fault_code = adm_temp.buffer[3] & 0x0F;
 		xQueueSend(measurement_queue, &esc_meas, portMAX_DELAY);
 
 		ace_meas.ticks = xLastWakeTime;
-		max31855_read(&adm_temp);
-		//device->external_temp = max31855_ext_temp_to_celsius(device);
-		adm_temp.external_temp = max31855_int_temp_to_celsius(&adm_temp);
+		max31855_read(&ace_temp);
+		adm_temp.external_temp = max31855_int_temp_to_celsius(&ace_temp);
+//		adm_temp.external_temp = max31855_ext_temp_to_celsius(&adm_temp);
 		ace_meas.value = adm_temp.external_temp;
 		ace_meas.fault_code = adm_temp.buffer[3] & 0x0F;
 		xQueueSend(measurement_queue, &ace_meas, portMAX_DELAY);

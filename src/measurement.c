@@ -22,7 +22,7 @@ uint8_t* measurement_to_string(measurement_t* measurement)
 {
 	static uint8_t measurement_string[64];
 
-	sprintf(measurement_string, "\x1D%d\x1D%s\x1D%d\x1D%d\x1D%02x\x03\r\n",
+	sprintf(measurement_string, "\x02%d\x1D%s\x1D%d\x1D%d\x1D%02x\x03\r\n",
 			measurement->ticks,
 			measurement->name,
 			measurement->value,

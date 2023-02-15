@@ -25,7 +25,6 @@ int main(void)
 	measurement_queue_init();
 
 	BaseType_t res;
-
 	res = xTaskCreate(hm10_task,
 					(const char*)"bluetooth_task",
 					configMINIMAL_STACK_SIZE*2,
@@ -35,20 +34,20 @@ int main(void)
 	assert_task_init(res);
 
 	res = xTaskCreate(temp_sensor_task,
-					(const char*)"admision_task",
+					(const char*)"temp_task",
 					configMINIMAL_STACK_SIZE*2,
 					0,
 					tskIDLE_PRIORITY+2,
 					0);
 	assert_task_init(res);
 
-	res = xTaskCreate(analog_sensors_task,
-					(const char*)"analog_sensors",
-					configMINIMAL_STACK_SIZE*2,
-					0,
-					tskIDLE_PRIORITY+4,
-					0);
-	assert_task_init(res);
+//	res = xTaskCreate(analog_sensors_task,
+//					(const char*)"analog_sensors",
+//					configMINIMAL_STACK_SIZE*2,
+//					0,
+//					tskIDLE_PRIORITY+4,
+//					0);
+//	assert_task_init(res);
 
 	gpioWrite(LED3, ON);
 
@@ -73,7 +72,6 @@ void hm10_task(void* taskParamPtr)
 	measurement_t measurement;
 
 	hm10_init();
-
 	while(TRUE)
 	{
 		if(gpioRead(HM10_STATE_PIN))
