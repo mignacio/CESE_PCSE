@@ -41,13 +41,13 @@ int main(void)
 					0);
 	assert_task_init(res);
 
-//	res = xTaskCreate(analog_sensors_task,
-//					(const char*)"analog_sensors",
-//					configMINIMAL_STACK_SIZE*2,
-//					0,
-//					tskIDLE_PRIORITY+4,
-//					0);
-//	assert_task_init(res);
+	res = xTaskCreate(analog_sensors_task,
+					(const char*)"analog_sensors",
+					configMINIMAL_STACK_SIZE*2,
+					0,
+					tskIDLE_PRIORITY+4,
+					0);
+	assert_task_init(res);
 
 	gpioWrite(LED3, ON);
 

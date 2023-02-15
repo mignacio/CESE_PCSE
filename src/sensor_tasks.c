@@ -25,15 +25,6 @@ void analog_sensors_task(void* taskParamPtr)
 	vbatt_meas.fault_code = 0;
 	measurement_set_name(&vbatt_meas, vbatt_sensor.name);
 
-	analog_sensor_t ace_pres;
-	ace_pres.scale = 32;
-	ace_pres.adc_pin = CH3;
-	strncpy(ace_pres.name, "Pace\0", 5);
-	measurement_t ace_meas;
-	ace_meas.decimal_pos = VBATT_DEC_POS;
-	ace_meas.fault_code = 0;
-	measurement_set_name(&ace_meas, ace_pres.name);
-
 	analog_sensor_t o2_sensor;
 	o2_sensor.scale = 32;
 	o2_sensor.adc_pin = CH2;
@@ -43,6 +34,15 @@ void analog_sensors_task(void* taskParamPtr)
 	o2_meas.fault_code = 0;
 	measurement_set_name(&o2_meas, o2_sensor.name);
 
+	analog_sensor_t ace_pres;
+	ace_pres.scale = 32;
+	ace_pres.adc_pin = CH3;
+	strncpy(ace_pres.name, "Pace\0", 5);
+	measurement_t ace_meas;
+	ace_meas.decimal_pos = VBATT_DEC_POS;
+	ace_meas.fault_code = 0;
+	measurement_set_name(&ace_meas, ace_pres.name);
+
 	while(TRUE)
 	{
 		xLastWakeTime = xTaskGetTickCount();
@@ -51,13 +51,13 @@ void analog_sensors_task(void* taskParamPtr)
 		vbatt_meas.value = analog_sensor_read(&vbatt_sensor);
 		xQueueSend(measurement_queue, &vbatt_meas, portMAX_DELAY);
 
-		ace_meas.ticks = xLastWakeTime;
-		ace_meas.value = analog_sensor_read(&vbatt_sensor);
-		xQueueSend(measurement_queue, &ace_meas, portMAX_DELAY);
-
 		o2_meas.ticks = xLastWakeTime;
 		o2_meas.value = analog_sensor_read(&vbatt_sensor);
 		xQueueSend(measurement_queue, &o2_meas, portMAX_DELAY);
+
+		ace_meas.ticks = xLastWakeTime;
+		ace_meas.value = analog_sensor_read(&vbatt_sensor);
+		xQueueSend(measurement_queue, &ace_meas, portMAX_DELAY);
 
 		vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
 	}
