@@ -6,7 +6,7 @@
 
 #include "sapi.h"
 
-#define VBATT_DEC_POS 4
+#define VBATT_DEC_POS 3
 #define O2_DEC_POS 1
 #define PRES_ACEITE_DEC_POS 1
 
@@ -16,6 +16,7 @@ typedef struct
 	uint32_t scale;
 	uint8_t name[5];
 	adcMap_t adc_pin;
+	const uint32_t (*look_up_table_ptr)[1024];
 }analog_sensor_t;
 
 void analog_sensors_init(void);
