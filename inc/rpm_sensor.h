@@ -8,7 +8,8 @@ typedef enum {
 	RPM_SENSOR_ENABLED, RPM_SENSOR_DISABLED
 } rpm_sensor_enabled_t;
 
-void rpm_measure(void);
+void rpm_init(uint8_t* name);
+uint32_t rpm_measure(void);
 
 void GPIO0_IRQHandler(void);
 

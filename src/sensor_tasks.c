@@ -6,6 +6,7 @@
 #include "sapi.h"
 #include "max31855.h"
 #include "analog_sensors.h"
+#include "rpm_sensor.h"
 #include "measurement.h"
 #include "sapi.h"
 #include "FreeRTOS.h"
@@ -205,6 +206,26 @@ void ace_temp_task(void* taskParamPtr)
 		max31855_measurement.fault_code = ace_temp.buffer[3] & 0x0F;
 
 		xQueueSend(measurement_queue, &max31855_measurement, portMAX_DELAY);
+		vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
+	}
+}
+
+void rpm_sensor_task(void* taskParamPtr){
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriodicity = pdMS_TO_TICKS(200);
+
+	rpm_init("RPM_\0");
+	measurement_t rpm_measurement;
+	rpm_measurement.decimal_pos = 0;
+	measurement_set_name(&rpm_measurement, "RPM_\0");
+	rpm_measurement.fault_code = 0;
+	while(TRUE)
+	{
+		xLastWakeTime = xTaskGetTickCount();
+		rpm_measurement.ticks = xLastWakeTime;
+		rpm_measurement.value = rpm_measure();
+
+		xQueueSend(measurement_queue, &rpm_measurement, portMAX_DELAY);
 		vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
 	}
 }

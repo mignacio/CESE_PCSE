@@ -18,18 +18,21 @@ typedef struct {
 } rpm_sensor_irq_t;
 
 typedef struct {
-   uint32_t echoRiseTime,					/* Ticks of echo pulse rise edge */
-            echoFallTime,					/* Ticks of echo pulse fall edge */
-            lastEchoWidth;					/* Echo pulse width in ticks */
-   gpioMap_t rpm_gpio;						/* Gpio configured for echo pin */
-   uint8_t enabled;						/* boolean flag */
-   rpm_sensor_irq_t irqConfig;	/* Sensor IRQ config */
+	uint32_t value;
+	uint32_t scale;
+	uint8_t name[5];
+	uint32_t echoRiseTime,					/* Ticks of echo pulse rise edge */
+			echoFallTime,					/* Ticks of echo pulse fall edge */
+			lastEchoWidth;					/* Echo pulse width in ticks */
+	gpioMap_t rpm_gpio;						/* Gpio configured for echo pin */
+	uint8_t enabled;						/* boolean flag */
+	rpm_sensor_irq_t irqConfig;	/* Sensor IRQ config */
 } rpm_sensor_t;
 
 // echoRiseTime | echoFallTime | lastEchoWidth | echoGpio | enabled | irqConfig (irqChannel, GpioPort, GpioPin) | position */
 rpm_sensor_t rpm_sensor = {0 , 0 , 0 , GPIO1 , RPM_SENSOR_DISABLED, { 0, { 3, 4 } } };
 uint32_t period_measurements[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-boolean measurement_done = FALSE;
+volatile bool measurement_done = FALSE;
 
 static void initGPIOIrqs(){
 
@@ -96,7 +99,7 @@ static void serveInterrupt(uint8_t irqChannel){
 		/* Save actual timer count in echoFallTime */
 		rpm_sensor.echoFallTime = Chip_TIMER_ReadCount(LPC_TIMER0);
 		/* Compute echo pulse width in timer ticks and save in lastEchoWidth */
-		//rpm_sensor.lastEchoWidth = rpm_sensor.echoFallTime - rpm_sensor.echoRiseTime;
+		rpm_sensor.lastEchoWidth = rpm_sensor.echoFallTime - rpm_sensor.echoRiseTime;
 		period_measurements[cycles] = rpm_sensor.echoFallTime - rpm_sensor.echoRiseTime;
 		/* Clear falling edge irq */
 		Chip_PININT_ClearFallStates(LPC_GPIO_PIN_INT,PININTCH(irqChannel));
@@ -106,32 +109,29 @@ static void serveInterrupt(uint8_t irqChannel){
 	clearInterrupt(irqChannel);
 }
 
-void rpm_init(){
+void rpm_init(uint8_t* name){
+	strncpy(rpm_sensor.name, name, 5);
 	gpioInit(rpm_sensor.rpm_gpio, GPIO_INPUT);
 }
 
-void rpm_measure_task(void* taskParamPtr){
-	TickType_t xLastWakeTime;
-	const TickType_t xPeriodicity = pdMS_TO_TICKS(200);
+uint32_t rpm_measure(){
+	measurement_done = FALSE;
 
-	while(TRUE)
-	{
-		xLastWakeTime = xTaskGetTickCount();
+	// Enable GPIO IRQ
+	enableGPIOIrq(rpm_sensor.irqConfig.irqChannel,
+				rpm_sensor.irqConfig.gpioInit.port,
+				rpm_sensor.irqConfig.gpioInit.pin,
+				BOTH_EDGES);
+	//wait until measurements are taken
+	/*
+	while(measurement_done != TRUE){
 
-		// Enable GPIO IRQ
-		enableGPIOIrq(rpm_sensor.irqConfig.irqChannel,
-					rpm_sensor.irqConfig.gpioInit.port,
-					rpm_sensor.irqConfig.gpioInit.pin,
-					BOTH_EDGES);
-		//wait until measurements are taken
+	};*/
+	//send data to the queue
 
-		//send data to the queue
-
-		//Disable it so we don't disturb other tasks.
-		disableGPIOIrq(rpm_sensor.irqConfig.irqChannel);
-
-		vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
-	}
+	//Disable it so we don't disturb other tasks.
+	//disableGPIOIrq(rpm_sensor.irqConfig.irqChannel);
+	return rpm_sensor.lastEchoWidth;
 }
 
 void GPIO0_IRQHandler(void)

@@ -10,4 +10,6 @@ void temp_sensor_task(void* taskParamPtr);
 // Tareas para sensores analogicos
 void analog_sensors_task(void* taskParamPtr);
 
+void rpm_sensor_task(void* taskParamPtr);
+
 #endif
