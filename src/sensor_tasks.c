@@ -91,6 +91,7 @@ void temp_sensor_task(void* taskParamPtr)
 	memset(esc_temp.buffer, 0, MAX31855_BUFFER_SIZE);
 	esc_temp.cs_pin = LCDRS;
 	gpioInit(esc_temp.cs_pin, GPIO_OUTPUT);
+
 	measurement_t esc_meas;
 	esc_meas.decimal_pos = MAX31855_EXTERNAL_DEC_POS;
 	measurement_set_name(&esc_meas, esc_temp.name);
@@ -100,6 +101,7 @@ void temp_sensor_task(void* taskParamPtr)
 	memset(ace_temp.buffer, 0, MAX31855_BUFFER_SIZE);
 	ace_temp.cs_pin = LCD4;
 	gpioInit(ace_temp.cs_pin, GPIO_OUTPUT);
+
 	measurement_t ace_meas;
 	ace_meas.decimal_pos = MAX31855_EXTERNAL_DEC_POS;
 	measurement_set_name(&ace_meas, ace_temp.name);
@@ -111,26 +113,26 @@ void temp_sensor_task(void* taskParamPtr)
 
 		adm_meas.ticks = xLastWakeTime;
 		max31855_read(&adm_temp);
-		adm_temp.external_temp = max31855_int_temp_to_celsius(&adm_temp);
-//		adm_temp.external_temp = max31855_ext_temp_to_celsius(&adm_temp);
+//		adm_temp.external_temp = max31855_int_temp_to_celsius(&adm_temp);
+		adm_temp.external_temp = max31855_ext_temp_to_celsius(&adm_temp);
 		adm_meas.value = adm_temp.external_temp;
 		adm_meas.fault_code = adm_temp.buffer[3] & 0x0F;
 		xQueueSend(measurement_queue, &adm_meas, portMAX_DELAY);
 
 		esc_meas.ticks = xLastWakeTime;
 		max31855_read(&esc_temp);
-		adm_temp.external_temp = max31855_int_temp_to_celsius(&esc_temp);
-//		adm_temp.external_temp = max31855_ext_temp_to_celsius(&adm_temp);
-		esc_meas.value = adm_temp.external_temp;
-		esc_meas.fault_code = adm_temp.buffer[3] & 0x0F;
+//		adm_temp.external_temp = max31855_int_temp_to_celsius(&esc_temp);
+		esc_temp.external_temp = max31855_ext_temp_to_celsius(&esc_temp);
+		esc_meas.value = esc_temp.external_temp;
+		esc_meas.fault_code = esc_temp.buffer[3] & 0x0F;
 		xQueueSend(measurement_queue, &esc_meas, portMAX_DELAY);
 
 		ace_meas.ticks = xLastWakeTime;
 		max31855_read(&ace_temp);
-		adm_temp.external_temp = max31855_int_temp_to_celsius(&ace_temp);
-//		adm_temp.external_temp = max31855_ext_temp_to_celsius(&adm_temp);
-		ace_meas.value = adm_temp.external_temp;
-		ace_meas.fault_code = adm_temp.buffer[3] & 0x0F;
+//		adm_temp.external_temp = max31855_int_temp_to_celsius(&ace_temp);
+		ace_temp.external_temp = max31855_ext_temp_to_celsius(&ace_temp);
+		ace_meas.value = ace_temp.external_temp;
+		ace_meas.fault_code = ace_temp.buffer[3] & 0x0F;
 		xQueueSend(measurement_queue, &ace_meas, portMAX_DELAY);
 
 

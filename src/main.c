@@ -49,14 +49,15 @@ int main(void)
 					0);
 	assert_task_init(res);
 
+	/*
 	res = xTaskCreate(rpm_sensor_task,
 					(const char*)"rpm_sensors",
 					configMINIMAL_STACK_SIZE*2,
 					0,
 					tskIDLE_PRIORITY+4,
 					0);
-		assert_task_init(res);
-
+	assert_task_init(res);
+*/
 	gpioWrite(LED3, ON);
 
 	vTaskStartScheduler();

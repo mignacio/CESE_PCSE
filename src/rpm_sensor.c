@@ -104,7 +104,11 @@ static void serveInterrupt(uint8_t irqChannel){
 		/* Clear falling edge irq */
 		Chip_PININT_ClearFallStates(LPC_GPIO_PIN_INT,PININTCH(irqChannel));
 	}
-
+	cycles++;
+	if(cycles >= 8){
+		cycles = 0;
+		measurement_done = TRUE;
+	}
 	/* Clear IRQ status */
 	clearInterrupt(irqChannel);
 }
@@ -123,14 +127,14 @@ uint32_t rpm_measure(){
 				rpm_sensor.irqConfig.gpioInit.pin,
 				BOTH_EDGES);
 	//wait until measurements are taken
-	/*
 	while(measurement_done != TRUE){
 
-	};*/
+	};
+	measurement_done = FALSE;
 	//send data to the queue
 
 	//Disable it so we don't disturb other tasks.
-	//disableGPIOIrq(rpm_sensor.irqConfig.irqChannel);
+	disableGPIOIrq(rpm_sensor.irqConfig.irqChannel);
 	return rpm_sensor.lastEchoWidth;
 }
 
