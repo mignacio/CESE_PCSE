@@ -121,7 +121,7 @@ void temp_sensor_task(void* taskParamPtr)
 
 		esc_meas.ticks = xLastWakeTime;
 		max31855_read(&esc_temp);
-//		adm_temp.external_temp = max31855_int_temp_to_celsius(&esc_temp);
+//		esc_temp.external_temp = max31855_int_temp_to_celsius(&esc_temp);
 		esc_temp.external_temp = max31855_ext_temp_to_celsius(&esc_temp);
 		esc_meas.value = esc_temp.external_temp;
 		esc_meas.fault_code = esc_temp.buffer[3] & 0x0F;
@@ -129,7 +129,7 @@ void temp_sensor_task(void* taskParamPtr)
 
 		ace_meas.ticks = xLastWakeTime;
 		max31855_read(&ace_temp);
-//		adm_temp.external_temp = max31855_int_temp_to_celsius(&ace_temp);
+//		ace_temp.external_temp = max31855_int_temp_to_celsius(&ace_temp);
 		ace_temp.external_temp = max31855_ext_temp_to_celsius(&ace_temp);
 		ace_meas.value = ace_temp.external_temp;
 		ace_meas.fault_code = ace_temp.buffer[3] & 0x0F;
@@ -214,7 +214,7 @@ void ace_temp_task(void* taskParamPtr)
 
 void rpm_sensor_task(void* taskParamPtr){
 	TickType_t xLastWakeTime;
-	const TickType_t xPeriodicity = pdMS_TO_TICKS(200);
+	const TickType_t xPeriodicity = pdMS_TO_TICKS(250);
 
 	rpm_init("RPM_\0");
 	measurement_t rpm_measurement;
@@ -223,11 +223,10 @@ void rpm_sensor_task(void* taskParamPtr){
 	rpm_measurement.fault_code = 0;
 	while(TRUE)
 	{
-		xLastWakeTime = xTaskGetTickCount();
-		rpm_measurement.ticks = xLastWakeTime;
 		rpm_measurement.value = rpm_measure();
-
+		rpm_measurement.ticks = xTaskGetTickCount();
 		xQueueSend(measurement_queue, &rpm_measurement, portMAX_DELAY);
+		xLastWakeTime = xTaskGetTickCount();
 		vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
 	}
 }

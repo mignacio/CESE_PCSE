@@ -36,18 +36,18 @@ void max31855_read(max31855_t* device)
 int32_t max31855_ext_temp_to_celsius(max31855_t* device)
 {
 	int32_t external_temp_raw = 0;
-	external_temp_raw = (int32_t)(device->buffer[1] >> 2) +
-						(int32_t)(device->buffer[0] << 6);
-	if((external_temp_raw & 0x00002000) != 0)
+	external_temp_raw = (((int32_t)device->buffer[1]) >> 2) +
+						((int32_t)device->buffer[0] << 6);
+	if(external_temp_raw & 0x00002000)
 	{
-		external_temp_raw |= 0xFFFFC000;//extiendo bit de signo, 1
+		external_temp_raw |= 0xFFFFC000; //negativo, extiendo bit de signo 1
 	}
 	else
 	{
-		external_temp_raw &= 0x00003FFF; //extiendo bit de signo, 0
+		external_temp_raw &= 0x00003FFF; //positivo, extiendo bit de signo 0
 	}
 	device->external_temp = external_temp_raw;
-	return (device->external_temp * 0.25 * 100);
+	return ((device->external_temp) * 25); //* 0.25 * 100
 }
 
 int32_t max31855_int_temp_to_celsius(max31855_t* device)
